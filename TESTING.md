@@ -9,10 +9,11 @@ Godot 4.6.3, 2026-10-02. All save-writing suites run in disposable directories w
 - Campaign v1/v2 persistence and migration: 197 checks, zero failures
 - Existing cosmetic/physics regression: 1,045 checks, zero failures
 - Campaign content/recipe boundaries/copy isolation: 720 checks, zero failures
-- Campaign UI contracts and font-measured text bounds: 1,534 checks, zero failures (1,296 text draws)
+- Campaign UI contracts and font-measured text bounds: 1,534 checks, zero failures (1,296 text draws); now run in Korean and English: 2,987 checks, zero failures
 - Campaign behavior: 352 checks + 104 fresh-process checkpoint checks, zero failures
+- Korean localization (tests/test_i18n.gd): 14,373 checks, zero failures
 
-Total: 4,348 assertions passed across the suites.
+Total: 4,348 assertions passed across the original suites; 20,174 across all eight suites after Korean localization.
 
 Campaign behavior covers mission progress and boss gating in every sector, all ships and evolutions, warned hazards and dash protection, relic choices, sector rewards, duplicate prevention, achievements, full vs practice completion, save/continue including pending intermission, legacy run restoration, new-run confirmation and failure/retry safety.
 
@@ -28,6 +29,11 @@ Legacy ten-minute survival simulation also completed with actual Warden defeat, 
 - Existing matching official Godot 4.6.3 single-thread Web engine JS/WASM/worklets retained unchanged from the previously verified Radiant Expedition Web export
 - HTML pack byte count updated to the new pack size
 - This bundle validation itself performed no Git push or public deployment; see Deployment
+
+## Korean localization
+`tests/test_i18n.gd` checks the translation table (matching format specifiers, Hangul in every entry, unchanged English mode), glyph coverage of every translated character in both shipped fonts, that every literal passed to `I18n.t`/`f`/`notice` and every save notice has an entry, and that all displayed campaign content is translated. It then draws about 70 screen states through the real `main.gd` renderer in both languages (title, hangar, map, journal, survival and campaign HUDs, guardians, toasts, level-up, relics, pause, results and confirmation) and fails on any untranslated English in Korean mode, off-screen or truncated text, or button overflow. It also verifies the L switch, its persistence and that it never touches the pilot save. `test_campaign_ui.gd` now runs its bounds contracts in both languages. Planted defects (a removed translation, an oversized button label) were confirmed to fail the suite.
+
+The localized Web build was also rendered in headless Chromium (WebGL 2 via SwiftShader) with the official 4.6.3 engine files: title, hangar, sector map, journal, campaign HUD with objective markers and toast, pause, and the L switch to English and back all displayed correct Hangul with no console errors. This is not a full human playthrough.
 
 ## Deployment
 GitHub Actions (`.github/workflows/deploy-pages.yml`) installs the official Godot 4.6.3 editor and Web export templates (SHA-256 pinned), runs all seven suites with NEON_DRIFT_TEST_SAVE=1 and a separate disposable XDG_DATA_HOME each, exports the Web build fresh from source and deploys it to https://sandboxwork.github.io/neon-drift/. The deployed `deploy-commit.txt` records the source commit.

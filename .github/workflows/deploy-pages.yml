@@ -37,7 +37,7 @@ jobs:
           set -euo pipefail
           godot --headless --editor --import --quit
           # Save-writing suites refuse to run without NEON_DRIFT_TEST_SAVE=1; each gets a disposable save directory.
-          for suite in test_game test_progression test_campaign_persistence test_visuals test_campaign_content test_campaign_ui test_campaign; do
+          for suite in test_game test_progression test_campaign_persistence test_visuals test_campaign_content test_campaign_ui test_campaign test_i18n; do
             echo "::group::$suite"
             NEON_DRIFT_TEST_SAVE=1 XDG_DATA_HOME="$(mktemp -d "/tmp/neon-$suite.XXXXXX")" godot --headless --script "res://tests/$suite.gd"
             echo "::endgroup::"
@@ -46,7 +46,7 @@ jobs:
           godot --headless --export-release Web docs/index.html
           touch docs/.nojekyll
           printf '%s\n' "$GITHUB_SHA" > docs/deploy-commit.txt
-          cp LICENSE assets/FONT-LICENSE.txt GODOT-LICENSE.txt GODOT-COPYRIGHT.txt docs/
+          cp LICENSE assets/FONT-LICENSE.txt assets/NOTO-SANS-KR-LICENSE.txt GODOT-LICENSE.txt GODOT-COPYRIGHT.txt docs/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

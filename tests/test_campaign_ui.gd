@@ -8,6 +8,7 @@ extends SceneTree
 ## XDG_DATA_HOME="$DATA" godot --headless --path . --script res://tests/test_campaign_ui.gd
 
 const UI = preload("res://campaign_ui.gd")
+const I18n = preload("res://i18n.gd")
 class DrawProbe:
 	extends RefCounted
 	const Campaign = preload("res://campaign.gd")
@@ -53,7 +54,26 @@ class DrawProbe:
 	func draw_rect(r: Rect2,c: Color) -> void: pass
 
 func _initialize() -> void:
+	var checks := 0
+	var texts := 0
+	var failures: Array[String] = []
+	for locale in I18n.LOCALES:
+		I18n.locale = locale
+		var g = _probe_locale()
+		checks += g.checks
+		texts += g.text_count
+		for failure in g.failures: failures.append("[%s] %s" % [locale,failure])
+	I18n.locale = "ko"
+	print("Validated %d text draw calls across map, intermission, journal, HUD in %d languages." % [texts,I18n.LOCALES.size()])
+	print("Campaign UI: %d bounds/contract checks, %d failures" % [checks,failures.size()])
+	for failure in failures: printerr(failure)
+	print("FAILURES: ",failures.size())
+	quit(0 if failures.is_empty() else 1)
+
+
+func _probe_locale():
 	var g = DrawProbe.new()
+	I18n.install_fonts(g.ui_font,g.title_font)
 	for unlock in range(3):
 		g.profile.sector_unlocked = unlock
 		for ship in range(3):
@@ -101,8 +121,4 @@ func _initialize() -> void:
 	UI.draw_campaign_hud(g)
 	g.checks += 1
 	if g.text_count != before: g.failures.append("HUD appears without a campaign")
-	print("Validated %d text draw calls across map, intermission, journal, HUD." % g.text_count)
-	print("Campaign UI: %d bounds/contract checks, %d failures" % [g.checks,g.failures.size()])
-	for failure in g.failures: printerr(failure)
-	print("FAILURES: ",g.failures.size())
-	quit(0 if g.failures.is_empty() else 1)
+	return g

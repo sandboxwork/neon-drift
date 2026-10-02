@@ -9,6 +9,7 @@ const Progression = preload("res://progression.gd")
 const Campaign = preload("res://campaign.gd")
 const CampaignRuntime = preload("res://campaign_runtime.gd")
 const CampaignUI = preload("res://campaign_ui.gd")
+const I18n = preload("res://i18n.gd")
 var campaign: Dictionary = {}
 var map_sector := 0
 var evolution_clock := 0.0
@@ -107,6 +108,8 @@ func _ready() -> void:
 	glow_texture.gradient = glow_gradient
 	_setup_inputs()
 	_setup_audio()
+	I18n.install_fonts(ui_font, title_font)
+	I18n.load_settings()
 	profile.load_data()
 	best_score = profile.best
 	save_notice = profile.last_error
@@ -208,7 +211,7 @@ func start_game(persist: bool = true) -> void:
 	boss_cinematic = 0.0
 	rings.clear()
 	trails.clear()
-	toast = "STAY MOVING.  COLLECT ENERGY."
+	toast = I18n.t("STAY MOVING.  COLLECT ENERGY.")
 	toast_timer = 3.0
 	_ring(player, MINT, 120, 0.65)
 	if persist: save_run()
@@ -248,7 +251,7 @@ func continue_run() -> void:
 	if campaign.get("intermission",false):
 		state = "intermission"
 	invulnerable = maxf(invulnerable, 1.5)
-	toast = "EXPEDITION RESTORED  /  YOUR BUILD IS INTACT"
+	toast = I18n.t("EXPEDITION RESTORED  /  YOUR BUILD IS INTACT")
 	toast_timer = 3.0
 
 func _go_home() -> void:
@@ -270,6 +273,8 @@ func _unhandled_input(event: InputEvent) -> void:
 				particles.resize(120)
 		if key == KEY_M:
 			muted = not muted
+		if key == KEY_L:
+			I18n.toggle()
 		if key == KEY_F12:
 			_save_screenshot()
 		if state == "sector_map":
@@ -441,7 +446,7 @@ func _tick(delta: float) -> void:
 	var new_wave := int(elapsed / 60.0) + 1
 	if new_wave != wave:
 		wave = new_wave
-		toast = "WAVE %02d  /  SIGNAL INTENSIFYING" % wave
+		toast = I18n.f("WAVE %02d  /  SIGNAL INTENSIFYING", wave)
 		toast_timer = 2.4
 		_ring(player, BLUE, 260, 0.8)
 	dash_cooldown = maxf(0, dash_cooldown - delta)
@@ -672,7 +677,7 @@ func _destroy_enemy(index: int, by_dash: bool = false) -> void:
 		boss_defeated = true
 		profile.credits += 50
 		earned_credits += 50
-		toast = "BOSS DEFEATED / COMPLETE YOUR OBJECTIVE" if CampaignRuntime.active(self) else "WARDEN DEFEATED  /  +50 PERMANENT CORES"
+		toast = I18n.t("BOSS DEFEATED / COMPLETE YOUR OBJECTIVE" if CampaignRuntime.active(self) else "WARDEN DEFEATED  /  +50 PERMANENT CORES")
 		toast_timer = 4.0
 	if gems.size() >= 512:
 		gems[0].value += 2 if e.kind == 2 else 1
@@ -686,7 +691,7 @@ func _destroy_enemy(index: int, by_dash: bool = false) -> void:
 		profile.credits += 1
 		earned_credits += 1
 	if profile.total_kills in [100, 300]:
-		toast = "PERMANENT WEAPON UNLOCKED  /  VISIT THE HANGAR"
+		toast = I18n.t("PERMANENT WEAPON UNLOCKED  /  VISIT THE HANGAR")
 		toast_timer = 4.0
 	enemies.remove_at(index)
 	if by_dash:
@@ -709,7 +714,7 @@ func _collect_gems(delta: float) -> void:
 				level += 1
 				next_level = 5 + level * 2
 				health = mini(max_health, health + 1)
-				toast = "LEVEL %02d  /  FIREPOWER UP + 1 HULL" % level
+				toast = I18n.f("LEVEL %02d  /  FIREPOWER UP + 1 HULL", level)
 				toast_timer = 2.4
 				_ring(player, MINT, 155, 0.7)
 				_sound("upgrade")
@@ -764,7 +769,7 @@ func _spawn_boss() -> void:
 	boss_cinematic_color = CORAL
 	_ring(pos, CORAL, 230, 1.8)
 	_ring(pos, GOLD, 150, 1.2)
-	toast = (Campaign.sector(campaign.sector).boss_name + " / BREAK THE SIGNAL") if CampaignRuntime.active(self) else "THE SIGNAL WARDEN  /  DEFEAT IT TO EXTRACT"
+	toast = I18n.f("%s / BREAK THE SIGNAL", I18n.t(Campaign.sector(campaign.sector).boss_name)) if CampaignRuntime.active(self) else I18n.t("THE SIGNAL WARDEN  /  DEFEAT IT TO EXTRACT")
 	toast_timer = 4.0
 
 func _particle(pos: Vector2, velocity: Vector2, color: Color, life: float, radius: float) -> void:
@@ -805,14 +810,14 @@ func choose_upgrade(index: int) -> void:
 	match index:
 		0:
 			overdrive += 1
-			toast = "OVERDRIVE  /  FASTER AUTO-FIRE"
+			toast = I18n.t("OVERDRIVE  /  FASTER AUTO-FIRE")
 		1:
 			phase_engine += 1
-			toast = "PHASE ENGINE  /  FASTER MOVE + DASH"
+			toast = I18n.t("PHASE ENGINE  /  FASTER MOVE + DASH")
 		2:
 			recovery += 1
 			health = mini(max_health, health + 2)
-			toast = "RECOVERY  /  REPAIR + WIDER ENERGY MAGNET"
+			toast = I18n.t("RECOVERY  /  REPAIR + WIDER ENERGY MAGNET")
 	invulnerable = maxf(invulnerable, 1.0)
 	toast_timer = 2.2
 	state = "playing"
@@ -851,6 +856,7 @@ func _draw() -> void:
 
 
 func _text(value: String, pos: Vector2, size: int, color: Color = INK, bold: bool = false) -> void:
+	if I18n.recorder.is_valid(): I18n.recorder.call({"text": value, "pos": pos, "size": size, "bold": bold})
 	draw_string(title_font if bold else ui_font, pos, value, HORIZONTAL_ALIGNMENT_LEFT, -1, size, color)
 
 func _center(value: String, y: float, size: int, color: Color = INK, bold: bool = false, x: float = 640) -> void:
@@ -867,6 +873,7 @@ func _panel(rect: Rect2, fill: Color = PANEL, border: Color = Color("22344c"), r
 	draw_style_box(box, rect)
 
 func _button(rect: Rect2, label: String, primary: bool = true) -> void:
+	if I18n.recorder.is_valid(): I18n.recorder.call({"button": rect, "text": label})
 	var hovered := rect.has_point(get_global_mouse_position())
 	var fill := MINT if primary else PANEL
 	if hovered:
@@ -981,18 +988,18 @@ func _draw_warden(e: Dictionary) -> void:
 	draw_arc(e.p,63,e.age*0.4,e.age*0.4+PI*1.5,48,Color(color,0.65),2,true)
 
 func _draw_menu() -> void:
-	_text("O R B I T A L   /   A R C A D E   0 1",Vector2(80,78),13,MINT)
+	_text(I18n.t("O R B I T A L   /   A R C A D E   0 1"),Vector2(80,78),13,MINT)
 	_text("NEON",Vector2(76,224),100,Color(BLUE,0.25),true)
 	_text("NEON",Vector2(74,222),100,INK,true)
 	_text("DRIFT",Vector2(74,324),100,MINT,true)
 	draw_line(Vector2(80,357),Vector2(140,357),MINT,3)
-	_text("One pilot. An endless signal.",Vector2(80,398),21,INK)
-	_text("Three sectors. Build a fleet. Break the Crown.",Vector2(80,432),16,MUTED)
-	_button(MAIN_BUTTON,"CONTINUE EXPEDITION" if not profile.run.is_empty() else "CAMPAIGN / ENTER")
-	_button(Rect2(78,536,332,44),"HANGAR / %d CORES   [H]" % profile.credits,false)
-	_button(Rect2(78,586,332,36),"SECTOR MAP / JOURNAL   [C]",false)
+	_text(I18n.t("One pilot. An endless signal."),Vector2(80,398),21,INK)
+	_text(I18n.t("Three sectors. Build a fleet. Break the Crown."),Vector2(80,432),16,MUTED)
+	_button(MAIN_BUTTON,I18n.t("CONTINUE EXPEDITION" if not profile.run.is_empty() else "CAMPAIGN / ENTER"))
+	_button(Rect2(78,536,332,44),I18n.f("HANGAR / %d CORES   [H]", profile.credits),false)
+	_button(Rect2(78,586,332,36),I18n.t("SECTOR MAP / JOURNAL   [C]"),false)
 	if best_score > 0:
-		_text("PERSONAL BEST  /  %06d" % best_score,Vector2(440,616),14,GOLD)
+		_text(I18n.f("PERSONAL BEST  /  %06d", best_score),Vector2(440,616),14,GOLD)
 	# A schematic arena illustration, not a static screenshot.
 	var center := Vector2(930,346)
 	_glow(center,150,BLUE,2.0)
@@ -1009,7 +1016,7 @@ func _draw_menu() -> void:
 		var pos := center - Vector2(28 + i * 23,-14 + i * 6)
 		_ship(pos,-0.45,MINT,0.11 - i * 0.026,2)
 	_ship(center,-0.45,MINT,1.0,3.2)
-	_text("MK IV / ASCENDANT",Vector2(835,520),13,MINT,true)
+	_text(I18n.t("MK IV / ASCENDANT"),Vector2(835,520),13,MINT,true)
 	for i in range(7):
 		var angle := i * 1.6 + ambient_time * (0.075 if i % 2 == 0 else -0.06)
 		var pos := center + Vector2.RIGHT.rotated(angle) * (150 + (i % 3) * 29)
@@ -1019,12 +1026,12 @@ func _draw_menu() -> void:
 		draw_line(pos,pos + Vector2(10,-5),MINT,3,true)
 	_panel(Rect2(738,581,388,54),Color("0c1727"),Color("203549"),6)
 	_text("03",Vector2(760,617),22,MINT,true)
-	_text("SECTORS",Vector2(832,615),11,MUTED)
+	_text(I18n.t("SECTORS"),Vector2(832,615),11,MUTED)
 	_text("03",Vector2(926,617),22,INK,true)
-	_text("SHIPS",Vector2(969,615),11,MUTED)
-	_text("Auto-save every 5s + on pause. Same browser/device only.",Vector2(79,644),11,MUTED)
+	_text(I18n.t("SHIPS"),Vector2(969,615),11,MUTED)
+	_text(I18n.t("Auto-save every 5s + on pause. Same browser/device only."),Vector2(79,644),11,MUTED)
 	if not save_notice.is_empty():
-		_text(save_notice,Vector2(78,95),12,CORAL)
+		_text(I18n.notice(save_notice),Vector2(78,95),12,CORAL)
 	_draw_footer()
 
 func _draw_hangar() -> void:
@@ -1034,9 +1041,9 @@ func _draw_hangar() -> void:
 		draw_line(Vector2(x,260),Vector2(x,420),Color(MINT,0.2),1,true)
 		for i in range(5):
 			draw_line(Vector2(x-5,265+i*36),Vector2(x+5,265+i*36),Color(MINT,0.4),1,true)
-	_center("PERMANENT HANGAR",115,40,MINT,true)
-	_center("%d CORES  /  %d LIFETIME ELIMINATIONS" % [profile.credits,profile.total_kills],161,17,GOLD)
-	_center("Every 5 kills = 1 core. Upgrades survive defeat and apply to NEW expeditions.",198,15,MUTED)
+	_center(I18n.t("PERMANENT HANGAR"),115,40,MINT,true)
+	_center(I18n.f("%d CORES  /  %d LIFETIME ELIMINATIONS", [profile.credits,profile.total_kills]),161,17,GOLD)
+	_center(I18n.t("Every 5 kills = 1 core. Upgrades survive defeat and apply to NEW expeditions."),198,15,MUTED)
 	var keys := ["hull_rank", "damage_rank", "magnet_rank"]
 	var titles := ["REINFORCED HULL", "REACTOR", "SALVAGE ARRAY"]
 	var desc := ["+1 starting and maximum hull", "+0.2 damage per projectile", "+20 energy pickup range"]
@@ -1048,24 +1055,24 @@ func _draw_hangar() -> void:
 		for pip in range(5):
 			draw_rect(Rect2(rect.position+Vector2(149+pip*23,95),Vector2(17,5)),color if pip < profile.get(keys[i]) else Color("263b53"))
 		_glow(rect.position+Vector2(253,43),25,color,0.5)
-		_text(titles[i],rect.position+Vector2(20,35),18,MINT,true)
-		_text(desc[i],rect.position+Vector2(20,70),13,MUTED)
-		_text("RANK %d / 5" % profile.get(keys[i]),rect.position+Vector2(20,105),16,INK)
-		_text("MAXED" if profile.get(keys[i]) >= 5 else "[%d] BUY / %d CORES" % [i+1,profile.upgrade_cost(keys[i])],rect.position+Vector2(20,145),14,GOLD)
-	_button(Rect2(390,447,500,48),"LOADOUT: " + ["PULSE", "FAN (+2 BOLTS)", "LANCE (2x DAMAGE)"][profile.weapon] + "   [W]",false)
-	_center("Fan unlocks at 100 kills / Lance at 300. Click loadout to cycle.",524,13,MUTED)
-	_button(Rect2(468,551,344,48),"BACK TO TITLE   /   ESC")
+		_text(I18n.t(titles[i]),rect.position+Vector2(20,35),18,MINT,true)
+		_text(I18n.t(desc[i]),rect.position+Vector2(20,70),13,MUTED)
+		_text(I18n.f("RANK %d / 5", profile.get(keys[i])),rect.position+Vector2(20,105),16,INK)
+		_text(I18n.t("MAXED") if profile.get(keys[i]) >= 5 else I18n.f("[%d] BUY / %d CORES", [i+1,profile.upgrade_cost(keys[i])]),rect.position+Vector2(20,145),14,GOLD)
+	_button(Rect2(390,447,500,48),I18n.f("LOADOUT: %s   [W]", I18n.t(["PULSE", "FAN (+2 BOLTS)", "LANCE (2x DAMAGE)"][profile.weapon])),false)
+	_center(I18n.t("Fan unlocks at 100 kills / Lance at 300. Click loadout to cycle."),524,13,MUTED)
+	_button(Rect2(468,551,344,48),I18n.t("BACK TO TITLE   /   ESC"))
 	if not save_notice.is_empty():
-		_center(save_notice,225,13,CORAL)
-	_center("Browser data can be cleared: this is a local save, not a cloud account.",630,12,MUTED)
+		_center(I18n.notice(save_notice),225,13,CORAL)
+	_center(I18n.t("Browser data can be cleared: this is a local save, not a cloud account."),630,12,MUTED)
 	_draw_footer()
 
 func _draw_footer() -> void:
 	draw_line(Vector2(32,659),Vector2(1248,659),Color("203047"),1)
-	_text("WASD / ↑ ↓ ← →   MOVE",Vector2(48,695),13,MUTED)
-	_text("SPACE   DASH + PHASE",Vector2(353,695),13,MUTED)
-	_text("AUTO-FIRE   ALWAYS ON",Vector2(648,695),13,MUTED)
-	_text("ESC PAUSE  M " + ("MUTED" if muted else "SOUND") + "  V " + ("CALM" if reduced_motion else "FX"),Vector2(963,695),11,MUTED)
+	_text(I18n.t("WASD / ↑ ↓ ← →   MOVE"),Vector2(48,695),13,MUTED)
+	_text(I18n.t("SPACE   DASH + PHASE"),Vector2(353,695),13,MUTED)
+	_text(I18n.t("AUTO-FIRE   ALWAYS ON"),Vector2(648,695),13,MUTED)
+	_text(I18n.f("ESC PAUSE  M %s  V %s  L %s", [I18n.t("MUTED" if muted else "SOUND"), I18n.t("CALM" if reduced_motion else "FX"), I18n.switch_label()]),Vector2(963,695),11,MUTED)
 
 func _draw_game() -> void:
 	_panel(ARENA,Color("081020"),Color("29425a"),14)
@@ -1191,74 +1198,74 @@ func _draw_game() -> void:
 func _draw_hud() -> void:
 	_panel(Rect2(22,14,1236,73),Color("0c1628"),Color("1b3047"),10)
 	_text("NEON DRIFT",Vector2(34,48),24,INK,true)
-	_text(("CAMPAIGN / SECTOR %02d" % (campaign.sector+1)) if CampaignRuntime.active(self) else "SECTOR %02d / %s" % [wave,"ENDLESS" if endless else "10"],Vector2(36,75),12,MUTED)
-	_text("HULL",Vector2(271,34),10,MUTED)
+	_text(I18n.f("CAMPAIGN / SECTOR %02d", campaign.sector+1) if CampaignRuntime.active(self) else I18n.f("SECTOR %02d / %s", [wave,I18n.t("ENDLESS") if endless else "10"]),Vector2(36,75),12,MUTED)
+	_text(I18n.t("HULL"),Vector2(271,34),10,MUTED)
 	for i in range(max_health):
 		var fill := MINT if i < health else Color("263044")
 		_panel(Rect2(270 + i * 18,44,13,19),fill,fill,3)
 	_center("%02d:%02d" % [int(elapsed)/60,int(elapsed)%60],61,34,INK,true)
-	_center(Campaign.sector(campaign.sector).name if CampaignRuntime.active(self) else "ENDLESS" if endless else ("DEFEAT THE WARDEN" if elapsed >= BOSS_TIME and not boss_defeated else "EXPEDITION / 10:00"),80,10,MUTED)
-	_text("SCORE",Vector2(873,34),10,MUTED)
+	_center(I18n.t(Campaign.sector(campaign.sector).name if CampaignRuntime.active(self) else "ENDLESS" if endless else ("DEFEAT THE WARDEN" if elapsed >= BOSS_TIME and not boss_defeated else "EXPEDITION / 10:00")),80,10,MUTED)
+	_text(I18n.t("SCORE"),Vector2(873,34),10,MUTED)
 	_text("%06d" % score,Vector2(870,64),26,INK,true)
 	_panel(Rect2(1019,24,143,46),Color("111f30"),MINT if dash_cooldown <= 0 else Color("273750"),8)
-	_center("DASH READY" if dash_cooldown <= 0 else "DASH  %.1fs" % dash_cooldown,53,12,MINT if dash_cooldown <= 0 else MUTED,true,1090)
+	_center(I18n.t("DASH READY") if dash_cooldown <= 0 else I18n.f("DASH  %.1fs", dash_cooldown),53,12,MINT if dash_cooldown <= 0 else MUTED,true,1090)
 	_panel(PAUSE_BUTTON,Color("111c2d"),Color("273750"),8)
 	draw_line(Vector2(1208,39),Vector2(1208,56),INK,3)
 	draw_line(Vector2(1219,39),Vector2(1219,56),INK,3)
 	draw_rect(Rect2(32,94,1216,3),Color("1b2b40"))
 	draw_rect(Rect2(32,94,1216 * (minf(1.0,campaign.sector_time/Campaign.sector(campaign.sector).boss_time) if CampaignRuntime.active(self) else minf(1.0, elapsed / SURVIVAL_TIME)),3),MINT)
 	_panel(Rect2(46,591,233,34),Color(0.05,0.09,0.16,0.95),Color("2b4052"),6)
-	_text("LV %02d" % level,Vector2(58,613),12,MINT,true)
+	_text(I18n.f("LV %02d", level),Vector2(58,613),12,MINT,true)
 	draw_rect(Rect2(119,605,145,5),Color("23364b"))
 	draw_rect(Rect2(119,605,145 * float(energy) / next_level,5),MINT)
-	_text("+%d CORES / %d BOLTS / DMG %.1f" % [earned_credits,mini(7,1+int(level/3)+int(overdrive/3)+(2 if run_weapon==1 else 0)),_bolt_damage()],Vector2(830,618),12,MINT)
+	_text(I18n.f("+%d CORES / %d BOLTS / DMG %.1f", [earned_credits,mini(7,1+int(level/3)+int(overdrive/3)+(2 if run_weapon==1 else 0)),_bolt_damage()]),Vector2(830,618),12,MINT)
 	if level >= 8:
-		_text("NOVA %.1fs" % maxf(0,pulse_timer),Vector2(300,613),12,BLUE)
+		_text(I18n.f("NOVA %.1fs", maxf(0,pulse_timer)),Vector2(300,613),12,BLUE)
 	for e in enemies:
 		if e.kind == 3:
-			_center(Campaign.sector(campaign.sector).boss_name if CampaignRuntime.active(self) else "SIGNAL WARDEN",186,12,CORAL)
+			_center(I18n.t(Campaign.sector(campaign.sector).boss_name if CampaignRuntime.active(self) else "SIGNAL WARDEN"),186,12,CORAL)
 			draw_rect(Rect2(400,198,480,6),Color("283244"))
 			draw_rect(Rect2(400,198,480 * maxf(0,e.hp/e.max_hp),6),CORAL)
 	if not save_notice.is_empty():
-		_center(save_notice,645,12,CORAL)
+		_center(I18n.notice(save_notice),645,12,CORAL)
 
 func _draw_overlay() -> void:
 	draw_rect(Rect2(Vector2.ZERO,SIZE),Color(0.015,0.027,0.055,0.82))
 	_panel(Rect2(385,148,510,452),Color("0d192b"),Color("304960"),18)
 	var color := MINT if state != "lost" else CORAL
-	_center("/ /  SIGNAL HELD  / /" if state == "paused" else ("/ /  TRANSMISSION COMPLETE  / /" if state == "won" else "/ /  SIGNAL INTERRUPTED  / /"),200,12,color)
+	_center(I18n.t("/ /  SIGNAL HELD  / /" if state == "paused" else ("/ /  TRANSMISSION COMPLETE  / /" if state == "won" else "/ /  SIGNAL INTERRUPTED  / /")),200,12,color)
 	var heading := "DRIFT LOST"
 	if state == "paused": heading = "PAUSED"
 	elif state == "won":
 		heading = ("CROWN SILENCED" if campaign.get("claimed",[]).size() == 3 else "SECTOR CLEARED") if campaign.get("mode",false) else "YOU SURVIVED"
-	_center(heading,263,36,INK,true)
-	_center("Take a breath. The arena can wait." if state == "paused" else (("The convoy is free. Your fleet keeps growing." if campaign.get("mode",false) else "Warden defeated. Your pilot keeps growing.") if state == "won" else "Stay moving. Dash through the danger."),301,14,MUTED)
+	_center(I18n.t(heading),263,36,INK,true)
+	_center(I18n.t("Take a breath. The arena can wait." if state == "paused" else (("The convoy is free. Your fleet keeps growing." if campaign.get("mode",false) else "Warden defeated. Your pilot keeps growing.") if state == "won" else "Stay moving. Dash through the danger.")),301,14,MUTED)
 	if state == "paused":
-		_center("Saved. ESC / ENTER to resume" if save_notice.is_empty() else "ESC / ENTER to resume",368,17,MINT)
+		_center(I18n.t("Saved. ESC / ENTER to resume" if save_notice.is_empty() else "ESC / ENTER to resume"),368,17,MINT)
 	else:
 		_center("%06d" % score,365,38,color,true)
-		_center("%02ds survived   •   %d eliminated   •   level %d" % [int(elapsed),kills,level],398,13,MUTED)
-	_button(RETRY_BUTTON,"RESUME RUN" if state == "paused" else "TRY AGAIN   /   ENTER")
-	_button(MENU_BUTTON,"SAVE & TITLE" if state == "paused" else "TITLE / HANGAR",false)
+		_center(I18n.f("%02ds survived   •   %d eliminated   •   level %d", [int(elapsed),kills,level]),398,13,MUTED)
+	_button(RETRY_BUTTON,I18n.t("RESUME RUN" if state == "paused" else "TRY AGAIN   /   ENTER"))
+	_button(MENU_BUTTON,I18n.t("SAVE & TITLE" if state == "paused" else "TITLE / HANGAR"),false)
 	if not save_notice.is_empty():
-		_center(save_notice,632,12,CORAL)
+		_center(I18n.notice(save_notice),632,12,CORAL)
 	if state == "won":
-		_button(Rect2(468,550,344,42),"KEEP THIS BUILD / ENDLESS [E]",false)
+		_button(Rect2(468,550,344,42),I18n.t("KEEP THIS BUILD / ENDLESS [E]"),false)
 	elif state == "lost":
-		_center("+%d cores saved. Permanent upgrades are waiting in the hangar." % earned_credits,566,11,GOLD)
+		_center(I18n.f("+%d cores saved. Permanent upgrades are waiting in the hangar.", earned_credits),566,11,GOLD)
 	if state == "confirm_new":
 		_panel(Rect2(400,165,480,248),Color("0d192b"))
-		_center("REPLACE SAVED RUN?",253,27,CORAL,true)
-		_center("The current expedition build will be replaced.",308,14,INK)
-		_center("Your cores, unlocks and hangar upgrades stay.",340,14,MUTED)
-		_button(RETRY_BUTTON,"START NEW / ENTER")
-		_button(MENU_BUTTON,"CANCEL / ESC",false)
+		_center(I18n.t("REPLACE SAVED RUN?"),253,27,CORAL,true)
+		_center(I18n.t("The current expedition build will be replaced."),308,14,INK)
+		_center(I18n.t("Your cores, unlocks and hangar upgrades stay."),340,14,MUTED)
+		_button(RETRY_BUTTON,I18n.t("START NEW / ENTER"))
+		_button(MENU_BUTTON,I18n.t("CANCEL / ESC"),false)
 
 func _draw_upgrades() -> void:
 	draw_rect(Rect2(Vector2.ZERO,SIZE),Color(0.015,0.027,0.055,0.9))
-	_center("LEVEL %02d  /  SIGNAL UPGRADE" % level,194,13,MINT)
-	_center("CHOOSE YOUR EDGE",242,34,INK,true)
-	_center("Time is paused. Pick one module. Every level also repairs 1 hull.",272,14,MUTED)
+	_center(I18n.f("LEVEL %02d  /  SIGNAL UPGRADE", level),194,13,MINT)
+	_center(I18n.t("CHOOSE YOUR EDGE"),242,34,INK,true)
+	_center(I18n.t("Time is paused. Pick one module. Every level also repairs 1 hull."),272,14,MUTED)
 	var names := ["OVERDRIVE", "PHASE ENGINE", "RECOVERY"]
 	var descriptions := [["Faster fire + stronger bolts.","Every 3 ranks: +1 projectile."], ["Move faster. Dash sooner.","Escape. Then strike back."], ["Repair 2 hull immediately.","Wider magnet + stronger nova."]]
 	var colors := [MINT, BLUE, GOLD]
@@ -1272,11 +1279,11 @@ func _draw_upgrades() -> void:
 		_poly(emblem,16,3+i,PI/2,Color(colors[i],0.08),colors[i])
 		_poly(emblem,7,3+i,-PI/2,Color(colors[i],0.25),INK)
 		_text("0%d" % (i+1),rect.position + Vector2(22,36),15,colors[i],true)
-		_text(names[i],rect.position + Vector2(22,81),20,INK,true)
-		_text(descriptions[i][0],rect.position + Vector2(22,118),12,MUTED)
-		_text(descriptions[i][1],rect.position + Vector2(22,139),12,MUTED)
-		_text("SELECT  /  %d" % (i+1),rect.position + Vector2(22,178),12,colors[i],true)
-	_center("Click or press 1, 2, 3  /  Level 8 unlocks an automatic nova pulse",537,13,MUTED)
+		_text(I18n.t(names[i]),rect.position + Vector2(22,81),20,INK,true)
+		_text(I18n.t(descriptions[i][0]),rect.position + Vector2(22,118),12,MUTED)
+		_text(I18n.t(descriptions[i][1]),rect.position + Vector2(22,139),12,MUTED)
+		_text(I18n.f("SELECT  /  %d", i+1),rect.position + Vector2(22,178),12,colors[i],true)
+	_center(I18n.t("Click or press 1, 2, 3  /  Level 8 unlocks an automatic nova pulse"),537,13,MUTED)
 
 
 func _request_campaign() -> void:
@@ -1294,7 +1301,7 @@ func start_campaign(sector: int = 0) -> void:
 	var ship: Dictionary = Campaign.ship(profile.ship)
 	max_health = maxi(2,max_health+ship.hull_bonus)
 	health = max_health
-	toast = Campaign.sector(sector).name + " / COMPLETE THE MISSION"
+	toast = I18n.f("%s / COMPLETE THE MISSION", I18n.t(Campaign.sector(sector).name))
 	toast_timer = 4.0
 	save_run()
 
@@ -1312,6 +1319,6 @@ func _check_evolution() -> void:
 	if not CampaignRuntime.active(self): return
 	if not Campaign.evolution(run_weapon,overdrive,phase_engine,recovery).is_empty():
 		if profile.award_achievement("evolved",20):
-			toast = "WEAPON EVOLVED / " + Campaign.evolution(run_weapon,overdrive,phase_engine,recovery)
+			toast = I18n.f("WEAPON EVOLVED / %s", I18n.t(Campaign.evolution(run_weapon,overdrive,phase_engine,recovery)))
 			toast_timer = 4.0
 	if phase_engine >= 5: profile.award_achievement("dash_50",30)

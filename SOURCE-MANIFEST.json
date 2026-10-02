@@ -4,22 +4,22 @@
   "save_schema": 2,
   "library_file_id": "libfile_8a743a7af6f48191affccadb60924fb2",
   "web_build_method": "GitHub Actions: fresh --export-release Web from source with official Godot 4.6.3 editor and export templates (SHA-256 pinned)",
-  "automated_assertions": 4348,
+  "automated_assertions": 20174,
   "gui_verified": false,
   "browser_verified": false,
   "published": true,
   "files": {
     ".github/workflows/deploy-pages.yml": {
-      "bytes": 2878,
-      "sha256": "20ab415a12fd891512e5a4171901eeaa6c9be983ec14bd81c33ffe988fd15214"
+      "bytes": 2920,
+      "sha256": "974da42a203e542adfa3c3f4707801769c64bf3ad468eba997085f47ede277f2"
     },
     ".gitignore": {
       "bytes": 49,
       "sha256": "518c90ff7edd4411fc36bd5844b200d9cd6ee9fe9834f8cb84ddd9f9b4cc888e"
     },
     "CAMPAIGN-GUIDE-KO.md": {
-      "bytes": 4565,
-      "sha256": "3cdea06afbedb5574d989f4bec1bb693a9b428077581c3679f915855df91af0e"
+      "bytes": 5230,
+      "sha256": "b46986a961ae9e4a3c26a0c4c0a9a4e4c61dd773c45460a0874f9d38001567e0"
     },
     "GODOT-COPYRIGHT.txt": {
       "bytes": 99790,
@@ -34,16 +34,20 @@
       "sha256": "e8079d170a734e9cbd882e2f245ed1f758057c97842cf22481271a952e897dc3"
     },
     "README.md": {
-      "bytes": 4965,
-      "sha256": "c642221ba55b184fbad4b82688a70e24b0123ab8a14bac4f00c731558d9a0ec9"
+      "bytes": 5373,
+      "sha256": "7fad8579d39acf45de2c75ad96bd6aa2e32e5840a52bb42d5513261f56da45d0"
     },
     "TESTING.md": {
-      "bytes": 4235,
-      "sha256": "aa3c852c869e718d340f43f4f1bfde009ae1a766aa82be292be8a989f5e68b3a"
+      "bytes": 5726,
+      "sha256": "469b3f2ae322fcae939969ab9b3fba130cfc9f3a3d5bad6797ae9eca54fea384"
     },
     "assets/FONT-LICENSE.txt": {
       "bytes": 3859,
       "sha256": "63d3ba759d12804c5b31a9d5940d855c1820d1f5999e6b0872eb1c7ff045fbc9"
+    },
+    "assets/NOTO-SANS-KR-LICENSE.txt": {
+      "bytes": 4388,
+      "sha256": "1c05c68c34f9708415aada51f17e1b0092d2cea709bf4a94cd38114f9e73d7d9"
     },
     "assets/icon.svg": {
       "bytes": 366,
@@ -52,6 +56,22 @@
     "assets/icon.svg.import": {
       "bytes": 1020,
       "sha256": "085e02403a7c156a2d28e921f00bc22f7eb7fa77a4452e41a57ed165ddc7cb21"
+    },
+    "assets/ko_title.ttf": {
+      "bytes": 433552,
+      "sha256": "3f99816e00c165576f544495d30280cb541db82a5fd6b16a1103816334cb089e"
+    },
+    "assets/ko_title.ttf.import": {
+      "bytes": 756,
+      "sha256": "76b3e7a73563a39d99acf7ad021f717b6d8e3f34495b5466d48607813acf7cd2"
+    },
+    "assets/ko_ui.ttf": {
+      "bytes": 433848,
+      "sha256": "1bcb7dabcc293f538850ca0e35910b26e539c26cb698b90e004a579610621c16"
+    },
+    "assets/ko_ui.ttf.import": {
+      "bytes": 747,
+      "sha256": "a7831a8596c268943d409db60fe6bee0b51fcf2d0d713b79a73bdf8ade6e14ac"
     },
     "assets/title.ttf": {
       "bytes": 708920,
@@ -78,28 +98,36 @@
       "sha256": "5aaffc4c2872f1ec8fd8c5ac8b96e2013dd1498defe58c94fde904b0b1175fe2"
     },
     "campaign_runtime.gd": {
-      "bytes": 6007,
-      "sha256": "1fd8815d515252cebbe9827a019c0734f9e8116ad7aaa483c6aac31bb387ac16"
+      "bytes": 6071,
+      "sha256": "88a0c60be4c58c40566adbe89dc93c10e5cb11066f98fe7b448c227383b4df3b"
     },
     "campaign_runtime.gd.uid": {
       "bytes": 20,
       "sha256": "da10831745dc3074c91115005a54a15ad5729d4912f1104c8c9171ef7936d75b"
     },
     "campaign_ui.gd": {
-      "bytes": 11972,
-      "sha256": "4cccc4219e04c8a3fd45ec6217d05f5eddf0d2bc254c38d99a568ff3cb41a273"
+      "bytes": 12526,
+      "sha256": "1a94a7027d6f241eb900cb23080ff89a14cfd257266720fdfda27ce1f173003f"
     },
     "campaign_ui.gd.uid": {
       "bytes": 20,
       "sha256": "d0f230ca572946227cc50ce10f7a18f4f0aa911251f2ee49b4f406ed0c443eae"
     },
     "export_presets.cfg": {
-      "bytes": 832,
-      "sha256": "e45cead7730786dd7d6c5889a1f8fbaae474a337dd9e803407079c1698782764"
+      "bytes": 867,
+      "sha256": "d41e68078ac1f159d34adef759af232c82b3b46d515775dff61d25f87cfd30f3"
+    },
+    "i18n.gd": {
+      "bytes": 19683,
+      "sha256": "c7acf2433eb5f90ff2c9a648dd45b2b59839df8d673d0c7c1ac6a9ff5ae407ce"
+    },
+    "i18n.gd.uid": {
+      "bytes": 20,
+      "sha256": "8824266014afb6d9e8ae45100273d3e2c28d3248ad68a85f0add62d38f1f91b7"
     },
     "main.gd": {
-      "bytes": 52918,
-      "sha256": "8bdb8214f97279ccf40317acb19b8c194960ec4ab883a4443491d030eba68673"
+      "bytes": 53931,
+      "sha256": "47d34f9dd708b7ced79912600397ca7c0980c6806a51d15c6a993455e9ceaa9e"
     },
     "main.gd.uid": {
       "bytes": 20,
@@ -154,8 +182,8 @@
       "sha256": "f1c4f4a0fb81da19807503effc2d498543993febd9cd37ee9c69df1c106923b1"
     },
     "tests/test_campaign_ui.gd": {
-      "bytes": 4791,
-      "sha256": "0acd304c88d0ef0160c4c1860ac0e552792ad63639dfbffd2396840f75624c62"
+      "bytes": 5213,
+      "sha256": "0590f14f4c1d0b157a298d7d25470ca13cba0ffee20583383b8afa6626a5dd63"
     },
     "tests/test_campaign_ui.gd.uid": {
       "bytes": 19,
@@ -168,6 +196,14 @@
     "tests/test_game.gd.uid": {
       "bytes": 19,
       "sha256": "cfc34afa344c10edf571bf48d0c3b9edd7c6915a908014fc83f5280ed4e5f219"
+    },
+    "tests/test_i18n.gd": {
+      "bytes": 12112,
+      "sha256": "f394f458263017a4bd3c82cf8f8ccb553997e2e61bc42f52e6f5279c4008342c"
+    },
+    "tests/test_i18n.gd.uid": {
+      "bytes": 20,
+      "sha256": "862dcc4737b8deaadf647256058560d5eb453ee87204c70bf8475b4d02ff50f3"
     },
     "tests/test_progression.gd": {
       "bytes": 10846,
@@ -184,6 +220,14 @@
     "tests/test_visuals.gd.uid": {
       "bytes": 20,
       "sha256": "613860c82fe24683ecfb87c3ff69e496c5be2aacfa04249aa8c9be4345c2399e"
+    },
+    "tools/build_korean_fonts.py": {
+      "bytes": 2233,
+      "sha256": "a193c393b9412c9e7f6d5f233a511305a71d258ac0a57b7aab50cf2adda61d03"
     }
-  }
+  },
+  "localization": [
+    "ko",
+    "en"
+  ]
 }

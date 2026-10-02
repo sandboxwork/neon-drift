@@ -1,6 +1,8 @@
 extends RefCounted
 ## Campaign rules are separate from the legacy survival expedition.
 
+const I18n = preload("res://i18n.gd")
+
 static func fresh(sector: int, ship: int) -> Dictionary:
 	return {"mode":true,"sector":sector,"sector_time":0.0,"objective":0,"objective_clock":0.0,"ship":ship,"claimed":[],"intermission":false,"hazards":[],"relics":[],"total_time":0.0}
 
@@ -116,7 +118,7 @@ static func choose_relic(g, choice: int) -> void:
 	g.previous_player = g.player
 	g.invulnerable = 2.0
 	g.state = "playing"
-	g.toast = "JUMP COMPLETE / " + g.Campaign.sector(g.campaign.sector).name
+	g.toast = I18n.f("JUMP COMPLETE / %s", I18n.t(g.Campaign.sector(g.campaign.sector).name))
 	g.toast_timer = 3.0
 	g.save_run()
 
@@ -131,7 +133,7 @@ static func draw_world(g) -> void:
 		g.draw_circle(pos,radius,Color(color,0.09))
 		g.draw_arc(pos,radius,0,TAU,48,color,2,true)
 		g._poly(pos,13,6,g.ambient_time*0.3,Color(color,0.15),color)
-		g._center("CHARGE RELAY" if c.sector == 1 else "SALVAGE" if c.sector == 2 else "LINK BEACON",pos.y+radius+18,11,color,false,pos.x)
+		g._center(I18n.t("CHARGE RELAY" if c.sector == 1 else "SALVAGE" if c.sector == 2 else "LINK BEACON"),pos.y+radius+18,11,color,false,pos.x)
 		g.draw_arc(pos,radius+5,-PI/2,-PI/2+TAU*clampf(c.objective_clock/(1.0 if c.sector==1 else 0.35),0,1),32,g.INK,3,true)
 	for h in c.hazards:
 		var warning: bool = h.warning > 0
