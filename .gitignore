@@ -1,0 +1,7 @@
+.godot/
+.cache/
+.config/
+.userdata/
+*.log
+
+docs/

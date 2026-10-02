@@ -1,0 +1,58 @@
+name: Build and deploy NEON DRIFT
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install official Godot 4.6.3 and Web templates
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASE=https://github.com/godotengine/godot-builds/releases/download/4.6.3-stable
+          curl --fail --location --retry 3 "$BASE/Godot_v4.6.3-stable_linux.x86_64.zip" -o /tmp/godot.zip
+          curl --fail --location --retry 3 "$BASE/Godot_v4.6.3-stable_export_templates.tpz" -o /tmp/templates.tpz
+          cd /tmp
+          mv godot.zip Godot_v4.6.3-stable_linux.x86_64.zip
+          mv templates.tpz Godot_v4.6.3-stable_export_templates.tpz
+          echo 'd0bc2113065e481c9c2c2b2c37daa4e8be3fe9e27f0ab9ab0b6096e9a37907f3  Godot_v4.6.3-stable_linux.x86_64.zip' | sha256sum --check --strict
+          echo '3fbe2c0e2dec9d537ab9ec97bcf8da91dcf23357fc51f67092dd068d839290a8  Godot_v4.6.3-stable_export_templates.tpz' | sha256sum --check --strict
+          unzip -q Godot_v4.6.3-stable_linux.x86_64.zip
+          sudo install -m 755 Godot_v4.6.3-stable_linux.x86_64 /usr/local/bin/godot
+          mkdir -p "$HOME/.local/share/godot/export_templates/4.6.3.stable"
+          unzip -j -q Godot_v4.6.3-stable_export_templates.tpz 'templates/web_nothreads_release.zip' 'templates/web_nothreads_debug.zip' -d "$HOME/.local/share/godot/export_templates/4.6.3.stable"
+      - name: Import, test, and export
+        shell: bash
+        run: |
+          set -euo pipefail
+          godot --headless --editor --import
+          godot --headless --script res://tests/test_game.gd
+          mkdir -p docs
+          godot --headless --export-release Web docs/index.html
+          touch docs/.nojekyll
+          printf '%s\n' "$GITHUB_SHA" > docs/deploy-commit.txt
+          cp LICENSE assets/FONT-LICENSE.txt GODOT-LICENSE.txt GODOT-COPYRIGHT.txt docs/
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
