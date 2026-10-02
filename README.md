@@ -1,75 +1,54 @@
-# NEON DRIFT
+# NEON DRIFT — Crown Campaign
 
-Godot 4로 만든 네온 아레나 생존 게임입니다. 75초 동안 5개 웨이브에서 살아남으세요.
+A complete Godot 4.6.3 arcade action campaign with local progression. The original survival game has become a connected three-sector rescue expedition, while existing pilot upgrades and suspended survival runs remain readable.
 
-## 실행
+한국어 설명과 상세 조작: [CAMPAIGN-GUIDE-KO.md](CAMPAIGN-GUIDE-KO.md)
 
-1. Godot 4.6 이상을 실행합니다. (개발·검증 버전: 4.6.3)
-2. **Import / 가져오기**에서 이 폴더의 `project.godot`를 선택합니다.
-3. **F5**로 실행합니다. 메인 메뉴에서 Enter를 누르세요.
+## Play
+Play in the browser: https://sandboxwork.github.io/neon-drift/
 
-터미널에서는 `godot --path /이/프로젝트/폴더`로 실행할 수 있습니다.
-Windows, macOS, Linux의 Godot 편집기에서 열 수 있는 소스 프로젝트입니다. 단독 실행 파일이나 Godot 자체는 포함하지 않습니다.
+Or open `project.godot` in Godot 4.6.3 and run the main scene (F5). A local Web export (`godot --headless --export-release Web docs/index.html`) can be served from `docs/` with any HTTP static server. WebAssembly requires HTTP; do not open the HTML directly via `file://`.
 
-## 조작
+Every push to `main` runs `.github/workflows/deploy-pages.yml`: it installs the official Godot 4.6.3 editor and Web export templates (SHA-256 pinned), runs all seven test suites, exports the single-thread Compatibility Web build from this source and deploys it to GitHub Pages. No shared-memory or cross-origin-isolation configuration is required. WebGL 2 is required. See TESTING.md for actual validation and limitations.
 
-| 키 | 기능 |
-| --- | --- |
-| WASD / 방향키 | 이동 |
-| Space | 바라보는 방향으로 대시. 대시 중 적을 관통하고 파괴합니다 |
-| Enter | 게임 시작 / 다시 시작 / 일시정지 해제 |
-| 1 / 2 / 3 또는 클릭 | 레벨업 시 업그레이드 선택 |
-| Esc / P | 일시정지 / 재개 |
-| M | 효과음 켜기 / 끄기 |
-| V | 화면 흔들림 켜기 / 끄기 |
-| F12 | 스크린샷 저장 (Godot 사용자 데이터 폴더의 neon-drift.png) |
+## Campaign
+- **Signal Graveyard:** recover five beacons; evade mines and the Warden's fan-shaped blast pattern
+- **Ion Foundry:** charge moving relay fields for 36 total seconds; avoid ion storms and the Crucible's radial blasts
+- **The Hollow Crown:** collect twelve salvage targets; resist gravity wells and defeat the Crown's spiral blast pattern
 
-공격은 가장 가까운 적을 향해 자동으로 발사됩니다. 파괴된 적의 초록색 에너지를 가까이 다가가서 모으세요. 레벨업하면 체력이 1 회복되고 시간이 멈춥니다. 세 가지 강화 중 하나를 고른 뒤 계속하세요.
+Each guardian arrives after 135 seconds in its sector. Defeat it and finish the objective to advance; there is no artificial wait after both conditions are complete. Clear all three sectors in one expedition to record a full campaign victory. Unlocked later-sector starts are practice runs and skip the earlier build/relics.
 
-- OVERDRIVE: 자동 발사 간격 감소
-- PHASE ENGINE: 이동 속도 증가, 대시 재사용 시간 감소
-- RECOVERY: 즉시 체력 2 회복, 에너지 자석 범위 증가
+Your level, upgrades, weapon and chosen relics carry between sectors. First two sector completions offer one of three relics: bonus damage, a phase rank, or maximum hull. Each jump repairs the ship. The intermission can be saved and resumed before committing a choice.
 
-에너지를 모아 레벨 3에 도달하면 탄이 2개, 레벨 6에는 3개로 늘어납니다. 레벨 5부터 탄의 공격력도 증가합니다. 체력은 최대 5입니다.
+## Fleet and builds
+Vector is balanced. Kestrel unlocks after sector one: one less hull, 22% faster travel, 18% faster dash recharge. Bastion unlocks after sector two: two extra hull, 15% extra damage, slower travel/dash recharge. Ship appearance and color follow the active archetype.
 
-## 적과 공정한 회피
+Level choices are Overdrive, Phase Engine and Recovery. In campaign, recipes evolve automatically:
+- Pulse + Overdrive 3 + Recovery 2 → Nova Array: 230-radius nova every 2.5 seconds
+- Fan + Overdrive 3 + Phase Engine 2 → Starweave: eight radial stars added to each volley
+- Lance + Overdrive 3 + Recovery 2 → Void Lance: additional piercing line damage
 
-- 빨간 삼각형: 플레이어를 추적
-- 노란 이중 삼각형: 노란 경로를 **0.65초** 보여준 다음 고정된 방향으로 돌진. 옆으로 피하거나 대시하세요
-- 파란 육각형: 느리지만 체력이 높은 중장갑 적
+Fan unlocks at 100 lifetime kills; Lance at 300. Select them in Hangar. Permanent Hull, Reactor and Salvage Array upgrades retain five ranks each. Six journal achievements award cores once per pilot. Sector and boss rewards are part of the atomic run/profile checkpoint so reloading a checkpoint cannot separately replay its already-saved reward.
 
-적이 나타나기 전 원형 경고가 표시됩니다. 플레이어 바로 옆에서는 생성되지 않습니다. 피격 후 잠시 무적이며, 업그레이드를 선택한 직후에도 보호 시간이 있습니다. 창의 포커스를 잃으면 자동으로 일시정지합니다.
+## Controls
+WASD/arrows move; Space dashes; auto-fire aims at nearest active enemy. 1–3 choose upgrades/relics. Esc/P pauses; M mutes; V reduces visual effects. Title: Enter continues or opens map, C/N opens map, H opens hangar. Map: 1–3 selects unlocked sectors, S cycles ships, J opens journal, Enter launches. Click controls are also supported.
 
-## 구성
+A new campaign requires confirmation before replacing a suspended run. Victory can continue into Endless. New campaign retries start at sector one. Existing old-format expeditions continue under the original ten-minute survival rules.
 
-- `main.gd`: 게임 로직, UI, 벡터 그래픽, 합성 효과음
-- `main.tscn`: 실행 씬
-- `assets/`: 폰트와 게임 아이콘
-- `tests/test_game.gd`: 엔진 내 회귀 테스트
+## Save compatibility
+`user://progression.cfg` stores pilot and run atomically with verified temporary file and backup rotation. Save schema v2 reads v1 pilots/runs, existing `record.cfg` best scores, and v2 campaign checkpoints. Unsupported future formats are not overwritten. Auto-save occurs every five seconds and on pause, upgrade, and sector transition. Cores/unlocks are retained after defeat. This is device/browser/origin-local storage, not cloud account sync; clearing browser data can remove it.
 
-추가 플러그인, 온라인 서비스, 외부 에셋 다운로드가 필요 없습니다. 최고 점수는 로컬 Godot 사용자 데이터 폴더에 저장됩니다.
+## Source layout
+- main.gd: original gameplay, input, rendering, integration
+- campaign.gd: sectors, ships, evolution recipes, achievement metadata
+- campaign_runtime.gd: objectives, telegraphed hazards, boss patterns, transitions, relics
+- campaign_ui.gd: map, journal, mission HUD, intermission
+- progression.gd: versioned, validated persistence and recovery
+- tests/: reproducible isolated-save test suites
+- docs/: Web export output with third-party licenses (generated by CI, not committed)
 
-## 검증
+Run tests only with a disposable XDG_DATA_HOME. Main gameplay/persistence suites require NEON_DRIFT_TEST_SAVE=1. Example:
 
-Godot 4.6.3에서 headless import 및 실행을 확인했습니다. `tests/test_game.gd`는 시작/재시작, 이동, 대시, 충돌, 레벨업 선택, 일시정지, 승리/패배, 돌진 경고, 저장 로직을 검사하며, 최종 107개 검사를 통과했습니다.
+    NEON_DRIFT_TEST_SAVE=1 XDG_DATA_HOME=$(mktemp -d) godot --headless --path . --script res://tests/test_campaign.gd
 
-실행: `godot --headless --path . --script res://tests/test_game.gd`
-
-네이티브 Linux 창에서 메뉴, 이동/대시, 수집, 업그레이드 화면 및 클릭/키보드 입력을 직접 확인했습니다. 클라우드 데스크톱에는 출력 오디오 장치가 없어 효과음 청취 검증은 하지 못했습니다. 효과음 생성/재생 로직은 포함되어 있습니다.
-
-## 라이선스
-
-게임 코드와 절차적으로 만든 그래픽/효과음은 MIT 라이선스입니다. 함께 제공된 DejaVu 글꼴의 라이선스는 `assets/FONT-LICENSE.txt`를 참고하세요. Godot 엔진은 MIT 라이선스이며 이 압축파일에 포함되지 않습니다.
-
-## GitHub Pages 배포
-
-1. 이 소스를 GitHub의 `main` 브랜치에 올립니다. `.github/workflows/deploy-pages.yml`도 포함하세요.
-2. 저장소 **Settings → Pages → Build and deployment → Source**를 **GitHub Actions**로 설정합니다.
-3. **Actions → Build and deploy NEON DRIFT → Run workflow**를 실행합니다.
-4. 완료되면 Pages 설정 또는 워크플로의 `github-pages` 환경에 표시된 주소를 엽니다.
-
-워크플로는 공식 Godot 4.6.3 및 내보내기 템플릿을 다운로드하고 고정된 SHA-256 해시를 확인한 뒤, 107개 회귀 검사를 실행하고 Web 빌드를 배포합니다. 소스 변경을 `main`에 push하면 재배포됩니다.
-
-Web 내보내기는 단일 스레드이며 별도의 COOP/COEP 서버 헤더가 필요 없습니다. WebAssembly 및 WebGL 2.0을 지원하는 데스크톱 브라우저와 키보드가 필요합니다. 터치 조작은 제공하지 않습니다. 브라우저에서 키를 누르거나 클릭한 후 효과음이 활성화됩니다. 최고 점수는 해당 브라우저의 사이트 저장소에 보관되므로 비공개 모드 또는 사이트 데이터 삭제 시 사라질 수 있습니다.
-
-직접 내보내기: 일치하는 공식 Godot 4.6.3 내보내기 템플릿을 설치한 후 `godot --headless --export-release Web docs/index.html`을 실행합니다. `docs/` 전체를 정적 웹 서버로 제공합니다. HTML 파일만 열거나 이름을 변경하지 마세요.
+Godot and bundled font licenses are retained. All game art is procedural.

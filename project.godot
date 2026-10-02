@@ -4,8 +4,8 @@ config_version=5
 [application]
 config/name="NEON DRIFT"
 run/main_scene="res://main.tscn"
-config/features=PackedStringArray("4.3", "GL Compatibility")
-config/description="A 75-second neon arena survival game."
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/description="Three-sector rescue campaign with distinct ships, evolving weapons, relic choices, permanent progression and legacy save support."
 config/icon="res://assets/icon.svg"
 
 [display]

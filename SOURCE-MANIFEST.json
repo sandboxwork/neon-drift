@@ -1,0 +1,189 @@
+{
+  "release": "NEON DRIFT Crown Campaign",
+  "engine": "4.6.3.stable.official.7d41c59c4",
+  "save_schema": 2,
+  "library_file_id": "libfile_8a743a7af6f48191affccadb60924fb2",
+  "web_build_method": "GitHub Actions: fresh --export-release Web from source with official Godot 4.6.3 editor and export templates (SHA-256 pinned)",
+  "automated_assertions": 4348,
+  "gui_verified": false,
+  "browser_verified": false,
+  "published": true,
+  "files": {
+    ".github/workflows/deploy-pages.yml": {
+      "bytes": 2878,
+      "sha256": "20ab415a12fd891512e5a4171901eeaa6c9be983ec14bd81c33ffe988fd15214"
+    },
+    ".gitignore": {
+      "bytes": 49,
+      "sha256": "518c90ff7edd4411fc36bd5844b200d9cd6ee9fe9834f8cb84ddd9f9b4cc888e"
+    },
+    "CAMPAIGN-GUIDE-KO.md": {
+      "bytes": 4565,
+      "sha256": "3cdea06afbedb5574d989f4bec1bb693a9b428077581c3679f915855df91af0e"
+    },
+    "GODOT-COPYRIGHT.txt": {
+      "bytes": 99790,
+      "sha256": "b3330849267d56ddd3d62a513817506606c2195034411fe05859f0140bff9d8a"
+    },
+    "GODOT-LICENSE.txt": {
+      "bytes": 1149,
+      "sha256": "b0435e3b3e4e55238f05f4b306f30524a1b2e20147810d436eaa554fa6855c80"
+    },
+    "LICENSE": {
+      "bytes": 1080,
+      "sha256": "e8079d170a734e9cbd882e2f245ed1f758057c97842cf22481271a952e897dc3"
+    },
+    "README.md": {
+      "bytes": 4965,
+      "sha256": "c642221ba55b184fbad4b82688a70e24b0123ab8a14bac4f00c731558d9a0ec9"
+    },
+    "TESTING.md": {
+      "bytes": 4235,
+      "sha256": "aa3c852c869e718d340f43f4f1bfde009ae1a766aa82be292be8a989f5e68b3a"
+    },
+    "assets/FONT-LICENSE.txt": {
+      "bytes": 3859,
+      "sha256": "63d3ba759d12804c5b31a9d5940d855c1820d1f5999e6b0872eb1c7ff045fbc9"
+    },
+    "assets/icon.svg": {
+      "bytes": 366,
+      "sha256": "f2660c1c645d02017fe606bc347dd69aa6a6c845cd182cbb8653fadb189f3e79"
+    },
+    "assets/icon.svg.import": {
+      "bytes": 1020,
+      "sha256": "085e02403a7c156a2d28e921f00bc22f7eb7fa77a4452e41a57ed165ddc7cb21"
+    },
+    "assets/title.ttf": {
+      "bytes": 708920,
+      "sha256": "a4c5bc453ca281d90ea079e596da7ae0dfeb5777497c29ec254e76d97ff6f890"
+    },
+    "assets/title.ttf.import": {
+      "bytes": 747,
+      "sha256": "f45fe1df48e2c3eb584b4cc1147bc262cb12325a9760687dd1eeed4d89badc54"
+    },
+    "assets/ui.ttf": {
+      "bytes": 759720,
+      "sha256": "57f73e11f51999432bf7ab22ce55b6f945d5eca1bf824404cfa9ec2e3718c84e"
+    },
+    "assets/ui.ttf.import": {
+      "bytes": 738,
+      "sha256": "8e5d7b46a99731d1f490bf867bc4b7f0fbb072430fb3a89c8e03cf19d52f4ede"
+    },
+    "campaign.gd": {
+      "bytes": 7455,
+      "sha256": "de1fb082a1543740112055ee30373816d34c471d66c1e68451853938e405d509"
+    },
+    "campaign.gd.uid": {
+      "bytes": 20,
+      "sha256": "5aaffc4c2872f1ec8fd8c5ac8b96e2013dd1498defe58c94fde904b0b1175fe2"
+    },
+    "campaign_runtime.gd": {
+      "bytes": 6007,
+      "sha256": "1fd8815d515252cebbe9827a019c0734f9e8116ad7aaa483c6aac31bb387ac16"
+    },
+    "campaign_runtime.gd.uid": {
+      "bytes": 20,
+      "sha256": "da10831745dc3074c91115005a54a15ad5729d4912f1104c8c9171ef7936d75b"
+    },
+    "campaign_ui.gd": {
+      "bytes": 11972,
+      "sha256": "4cccc4219e04c8a3fd45ec6217d05f5eddf0d2bc254c38d99a568ff3cb41a273"
+    },
+    "campaign_ui.gd.uid": {
+      "bytes": 20,
+      "sha256": "d0f230ca572946227cc50ce10f7a18f4f0aa911251f2ee49b4f406ed0c443eae"
+    },
+    "export_presets.cfg": {
+      "bytes": 832,
+      "sha256": "e45cead7730786dd7d6c5889a1f8fbaae474a337dd9e803407079c1698782764"
+    },
+    "main.gd": {
+      "bytes": 52918,
+      "sha256": "8bdb8214f97279ccf40317acb19b8c194960ec4ab883a4443491d030eba68673"
+    },
+    "main.gd.uid": {
+      "bytes": 20,
+      "sha256": "ef145fff4271526853a4931dac5a83902c431ffaaf4738d7572d9cc6677de58a"
+    },
+    "main.tscn": {
+      "bytes": 166,
+      "sha256": "c9e66ee360fbaa55813cc4fc8e4c390cfe1234e9b50cce07d4d11d068f2f2fd4"
+    },
+    "progression.gd": {
+      "bytes": 15559,
+      "sha256": "1d018a75faff6205a28595e94f75925f41484475e81fcc1b235f346bc374b6cf"
+    },
+    "progression.gd.uid": {
+      "bytes": 20,
+      "sha256": "9c1f3876adea0db346a61a9d7eae05f9d10930207a620495983dfbfe40759df1"
+    },
+    "project.godot": {
+      "bytes": 899,
+      "sha256": "a35b289ff0516b22bc0a9e97c870f5e008545b3e2e2e6a3ae0c035a2a69ec16a"
+    },
+    "tests/capture_visuals.gd": {
+      "bytes": 2561,
+      "sha256": "0a34472984f344970714e7db137492ed4477503d6a17c74d47661bc17a3393a2"
+    },
+    "tests/capture_visuals.gd.uid": {
+      "bytes": 19,
+      "sha256": "92c6f149a0822d316bb38d4252dc784359bee0fe3f3fa9f57d79f98f0ca825f2"
+    },
+    "tests/test_campaign.gd": {
+      "bytes": 38007,
+      "sha256": "11d8c9fc6589911f5b4be76bbc9c3e1fa8c8b8743b3d181d894520483c6c6b63"
+    },
+    "tests/test_campaign.gd.uid": {
+      "bytes": 20,
+      "sha256": "60edb8b9eb8dccde0bb8c7c661f4644eeade312ff4b817c48725f9bfac264fbc"
+    },
+    "tests/test_campaign_content.gd": {
+      "bytes": 4197,
+      "sha256": "ca361cecedf1a3368a27c73ee496bc52016e449aa25590597b5fdbd36cfcb71f"
+    },
+    "tests/test_campaign_content.gd.uid": {
+      "bytes": 20,
+      "sha256": "63e61708ea8a8dbf568fda96acb7669a095940412e342b3db8237c73d6ce3523"
+    },
+    "tests/test_campaign_persistence.gd": {
+      "bytes": 16542,
+      "sha256": "3d9ed428da03e9dd4a8d997a914d38c0c4a4a63b0b53954355744745940386ec"
+    },
+    "tests/test_campaign_persistence.gd.uid": {
+      "bytes": 19,
+      "sha256": "f1c4f4a0fb81da19807503effc2d498543993febd9cd37ee9c69df1c106923b1"
+    },
+    "tests/test_campaign_ui.gd": {
+      "bytes": 4791,
+      "sha256": "0acd304c88d0ef0160c4c1860ac0e552792ad63639dfbffd2396840f75624c62"
+    },
+    "tests/test_campaign_ui.gd.uid": {
+      "bytes": 19,
+      "sha256": "689b84036dca8253fae6d306be36974058c3fe2baec540989d5e9efba375728d"
+    },
+    "tests/test_game.gd": {
+      "bytes": 36479,
+      "sha256": "ebe9a8e3bbad61a38ed4847b6dcb630888bfadf141fc05d1b139562394f99506"
+    },
+    "tests/test_game.gd.uid": {
+      "bytes": 19,
+      "sha256": "cfc34afa344c10edf571bf48d0c3b9edd7c6915a908014fc83f5280ed4e5f219"
+    },
+    "tests/test_progression.gd": {
+      "bytes": 10846,
+      "sha256": "09bb9ac1a81e394c05a2aac2611a8a53bd87b24476454c527645a29c9c8c5498"
+    },
+    "tests/test_progression.gd.uid": {
+      "bytes": 19,
+      "sha256": "4f6c07eb1adbeec0ccbd6ff1833400add8b575c6dd241e29b1fd1fceea72d64c"
+    },
+    "tests/test_visuals.gd": {
+      "bytes": 15307,
+      "sha256": "a88b94f265889c6e1a32dfc8497008f55f0153e5621af593677f8a89a9a436fc"
+    },
+    "tests/test_visuals.gd.uid": {
+      "bytes": 20,
+      "sha256": "613860c82fe24683ecfb87c3ff69e496c5be2aacfa04249aa8c9be4345c2399e"
+    }
+  }
+}
