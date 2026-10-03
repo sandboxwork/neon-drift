@@ -45,7 +45,11 @@ func screenshot(locale: String, page: String) -> void:
 	# can include a rotated device mask or a letterboxed UIKit presentation.
 	var framebuffer := get_viewport().get_texture().get_image()
 	framebuffer.convert(Image.FORMAT_RGB8)
-	assert(framebuffer.save_png(output + "/" + locale + "-" + page + ".png") == OK)
+	var save_error := framebuffer.save_png(output + "/" + locale + "-" + page + ".png")
+	if save_error != OK:
+		push_error("Native screenshot save failed: %d" % save_error)
+		get_tree().quit(2)
+		return
 	var marker := FileAccess.open(output + "/ready.json", FileAccess.WRITE)
 	marker.store_string(JSON.stringify({"name": locale + "-" + page, "state": game.state, "locale": I18n.locale, "platform": OS.get_name(), "capture_method": "native iOS viewport framebuffer", "width": framebuffer.get_width(), "height": framebuffer.get_height()}))
 	marker.close()

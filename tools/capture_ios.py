@@ -65,9 +65,9 @@ def main():
         destination.mkdir(parents=True,exist_ok=True)
         run(['xcrun','simctl','shutdown','all'])
         run(['xcrun','simctl','boot',udid])
-        simulator=Path(os.environ['DEVELOPER_DIR'])/'Applications/Simulator.app'
-        run(['open','-a',simulator,'--args','-CurrentDeviceUDID',udid])
-        run(['xcrun','simctl','bootstatus',udid,'-b'],timeout=180)
+        # A fresh hosted simulator may spend several minutes migrating its
+        # system databases. Framebuffer capture does not need a Simulator GUI.
+        run(['xcrun','simctl','bootstatus',udid,'-b'],timeout=600)
         run(['xcrun','simctl','status_bar',udid,'override','--time','9:41','--dataNetwork','wifi','--wifiMode','active','--wifiBars','3','--batteryState','charged','--batteryLevel','100'])
         run(['xcrun','simctl','install',udid,app])
         console=destination/'simulator-console.log'
