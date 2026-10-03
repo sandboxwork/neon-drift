@@ -40,8 +40,14 @@ func screenshot(locale: String, page: String) -> void:
 	game.mobile_ui.refresh()
 	game.queue_redraw()
 	for frame in range(10): await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	# Capture the actual native app framebuffer. Simulator hardware screenshots
+	# can include a rotated device mask or a letterboxed UIKit presentation.
+	var framebuffer := get_viewport().get_texture().get_image()
+	framebuffer.convert(Image.FORMAT_RGB8)
+	assert(framebuffer.save_png(output + "/" + locale + "-" + page + ".png") == OK)
 	var marker := FileAccess.open(output + "/ready.json", FileAccess.WRITE)
-	marker.store_string(JSON.stringify({"name": locale + "-" + page, "state": game.state, "locale": I18n.locale, "platform": OS.get_name()}))
+	marker.store_string(JSON.stringify({"name": locale + "-" + page, "state": game.state, "locale": I18n.locale, "platform": OS.get_name(), "capture_method": "native iOS viewport framebuffer", "width": framebuffer.get_width(), "height": framebuffer.get_height()}))
 	marker.close()
 	var timeout := Time.get_ticks_msec() + 60000
 	while not FileAccess.file_exists(output + "/ack"):

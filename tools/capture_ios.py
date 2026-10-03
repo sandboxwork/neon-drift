@@ -53,7 +53,9 @@ def main():
     pool=devices[runtime]
     print('Capture runtime:', runtime, flush=True)
     selected=[]
+    wanted=os.environ.get('CAPTURE_DEVICES','iphone,ipad').split(',')
     for label, match in [('iphone',lambda n: 'iPhone' in n and 'Pro Max' in n),('ipad',lambda n: 'iPad Pro' in n and '13-inch' in n)]:
+        if label not in wanted: continue
         choices=[d for d in pool if match(d['name'])]
         if not choices: raise RuntimeError('No compatible '+label+' simulator: '+str([d['name'] for d in pool]))
         selected.append((label,choices[-1]))
@@ -90,7 +92,8 @@ def main():
                 name=state['name']
                 if any(c['name']==name for c in captures): continue
                 time.sleep(0.3)
-                run(['xcrun','simctl','io',udid,'screenshot','--type=png',destination/(name+'.png')])
+                shutil.copy2(marker.parent/(name+'.png'),destination/(name+'.png'))
+                print('Captured native framebuffer:', name, state['width'], state['height'],flush=True)
                 captures.append(state)
                 marker.unlink()
                 (marker.parent/'ack').write_text('captured\n')
