@@ -1,0 +1,41 @@
+name: iOS metadata capture
+on:
+  push:
+    branches: [ios-metadata-preflight]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  capture:
+    runs-on: macos-15
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/cache@v4
+        with:
+          path: .cache/godot
+          key: godot-4.6.3-macos-ios-v1
+      - name: Install verified Godot editor and templates
+        run: python3 tools/install_godot.py
+      - name: Export production Xcode project
+        run: python3 tools/export_ios.py --unsigned --bundle-id com.jkchat.neondrift
+      - name: Compile production iOS app
+        run: >-
+          xcodebuild -project build/ios/neondrift.xcodeproj -scheme neondrift
+          -configuration Release -destination 'generic/platform=iOS'
+          -derivedDataPath build/DeviceDerivedData CODE_SIGNING_ALLOWED=NO build
+      - name: Capture native iPhone and iPad screens in both languages
+        run: python3 tools/capture_ios.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neon-drift-native-screenshots
+          path: build/app-store-screenshots
+          if-no-files-found: warn
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: neon-drift-production-xcode
+          path: build/ios
+          retention-days: 14

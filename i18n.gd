@@ -1,7 +1,8 @@
 extends RefCounted
 ## Display-time localization. Game logic, save data and campaign content keep
 ## their English source strings (several double as logic keys); only text that is
-## drawn goes through t() / f() / notice(). Korean is the default; L toggles.
+## drawn goes through t() / f() / notice(). First launch follows the device
+## language, with English fallback; a saved explicit choice takes precedence.
 
 const SETTINGS_PATH := "user://settings.cfg"
 ## Hangul subsets of Noto Sans KR (KS X 1001 syllables). DejaVu stays primary for
@@ -11,11 +12,54 @@ const KOREAN_UI: Font = preload("res://assets/ko_ui.ttf")
 const KOREAN_TITLE: Font = preload("res://assets/ko_title.ttf")
 const LOCALES := ["ko", "en"]
 
-static var locale := "ko"
+static var locale := "en"
 ## Test hook: when valid, main.gd reports every drawn string as (text, pos, size, bold).
 static var recorder: Callable
 
 const KO := {
+	"BACK": "뒤로",
+	"%d CORES": "코어 %d",
+	"BUY / %d CORES": "구매 / 코어 %d",
+	"CHANGE SHIP": "함선 변경",
+	"CLEAR SIGNAL GRAVEYARD": "신호의 묘지 완료 시 해금",
+	"CLEAR ION FOUNDRY": "이온 주조소 완료 시 해금",
+	"CONTINUE": "이어하기",
+	"Collect energy from farther away.": "더 먼 곳의 에너지를 수집합니다.",
+	"DASH": "대시",
+	"FAN": "확산포",
+	"FULL EFFECTS": "효과 전체",
+	"HANGAR": "격납고",
+	"JOURNAL": "기록실",
+	"LANCE": "관통포",
+	"LAUNCH": "출격",
+	"LEVEL": "레벨",
+	"LICENSES": "라이선스",
+	"PRIVACY POLICY": "개인정보 안내",
+	"SUPPORT": "지원",
+	"Could not open the browser.": "브라우저를 열지 못했습니다.",
+	"Move with the left stick. Fire is automatic.": "왼쪽 스틱으로 이동합니다. 공격은 자동입니다.",
+	"NEW CAMPAIGN": "새 캠페인",
+	"NEXT": "다음",
+	"PAUSE": "일시정지",
+	"PREVIOUS": "이전",
+	"Play in landscape orientation.": "기기를 가로로 돌려 플레이하세요.",
+	"Practice start: earlier sectors are skipped.": "연습 출격: 앞 구역은 건너뜁니다.",
+	"Progress is saved on this device.": "진행도는 이 기기에 저장됩니다.",
+	"REDUCED EFFECTS": "효과 줄임",
+	"Rotate your device": "기기를 돌려주세요",
+	"SECTOR MAP": "구역 지도",
+	"SELECT": "선택",
+	"SETTINGS": "설정",
+	"SOUND OFF": "소리 끔",
+	"SOUND ON": "소리 켬",
+	"START NEW": "새로 시작",
+	"Settings could not be saved.": "설정을 저장하지 못했습니다.",
+	"TRANSMISSION COMPLETE": "임무 완료",
+	"TRY AGAIN": "다시 도전",
+	"WEAPON": "무기",
+	"Fly through the glowing beacons. Move out of marked mine fields before they detonate.": "빛나는 신호기를 통과하세요. 지뢰가 터지기 전에 표시된 구역을 벗어나세요.",
+	"Stay inside the relay field to charge it. Progress is kept when you leave to evade danger.": "중계 구역 안에 머물러 충전하세요. 위험을 피해 나가도 충전량은 유지됩니다.",
+	"Collect salvage cores from the wreck field. Gravity wells pull you off course; dash to escape.": "잔해에서 코어를 모으세요. 중력장에 끌려가면 대시로 탈출하세요.",
 	# ----- Title, hangar, shared footer -----
 	"O R B I T A L   /   A R C A D E   0 1": "궤 도   /   아 케 이 드   0 1",
 	"One pilot. An endless signal.": "한 명의 파일럿. 끝나지 않는 신호.",
@@ -298,7 +342,13 @@ static func switch_label() -> String:
 	return SWITCH_LABEL.get(locale, "ENGLISH")
 
 
-static func load_settings() -> void:
+static func locale_for_device(language: String) -> String:
+	var code := language.strip_edges().to_lower().replace("-", "_").get_slice("_", 0)
+	return code if code in LOCALES else "en"
+
+
+static func load_settings(device_language: String = "") -> void:
+	locale = locale_for_device(OS.get_locale_language() if device_language.is_empty() else device_language)
 	var config := ConfigFile.new()
 	if config.load(SETTINGS_PATH) != OK:
 		return

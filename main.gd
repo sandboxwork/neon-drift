@@ -1,5 +1,5 @@
 extends Node2D
-## NEON DRIFT. All art is drawn procedurally; no network or external dependencies.
+## NEON DRIFT. Gameplay art is drawn procedurally; no network dependencies.
 
 const SIZE := Vector2(1280, 720)
 const ARENA := Rect2(32, 108, 1216, 532)
@@ -10,6 +10,8 @@ const Campaign = preload("res://campaign.gd")
 const CampaignRuntime = preload("res://campaign_runtime.gd")
 const CampaignUI = preload("res://campaign_ui.gd")
 const I18n = preload("res://i18n.gd")
+const MobileUI = preload("res://mobile_ui.gd")
+var mobile_ui: CanvasLayer
 var campaign: Dictionary = {}
 var map_sector := 0
 var evolution_clock := 0.0
@@ -49,7 +51,13 @@ const RUN_FIELDS := ["elapsed", "player", "facing", "health", "max_health", "sco
 
 var ui_font: Font = preload("res://assets/ui.ttf")
 var title_font: Font = preload("res://assets/title.ttf")
-var state := "menu"
+var state := "menu":
+	set(value):
+		if state == value:
+			return
+		state = value
+		if is_instance_valid(mobile_ui):
+			mobile_ui.invalidate()
 var ambient_time := 0.0
 var elapsed := 0.0
 var player := Vector2(640, 374)
@@ -110,11 +118,43 @@ func _ready() -> void:
 	_setup_audio()
 	I18n.install_fonts(ui_font, title_font)
 	I18n.load_settings()
+	_load_preferences()
 	profile.load_data()
 	best_score = profile.best
 	save_notice = profile.last_error
 	get_window().focus_exited.connect(_on_focus_lost)
+	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available() or "--touch-ui" in OS.get_cmdline_user_args():
+		mobile_ui = MobileUI.new()
+		mobile_ui.game = self
+		add_child(mobile_ui)
 	queue_redraw()
+
+func _load_preferences() -> void:
+	var config := ConfigFile.new()
+	if config.load(I18n.SETTINGS_PATH) == OK:
+		muted = config.get_value("audio", "muted", false) == true
+		reduced_motion = config.get_value("display", "reduced_motion", false) == true
+
+func _save_preferences() -> void:
+	var config := ConfigFile.new()
+	config.load(I18n.SETTINGS_PATH)
+	config.set_value("audio", "muted", muted)
+	config.set_value("display", "reduced_motion", reduced_motion)
+	if config.save(I18n.SETTINGS_PATH) != OK:
+		save_notice = "Settings could not be saved."
+
+func toggle_sound() -> void:
+	muted = not muted
+	if muted:
+		for voice in audio_pool:
+			voice.stop()
+	_save_preferences()
+
+func toggle_motion() -> void:
+	reduced_motion = not reduced_motion
+	if reduced_motion and particles.size() > 120:
+		particles.resize(120)
+	_save_preferences()
 
 func _setup_inputs() -> void:
 	var bindings := {"left": [KEY_A,KEY_LEFT], "right": [KEY_D,KEY_RIGHT], "up": [KEY_W,KEY_UP], "down": [KEY_S,KEY_DOWN], "dash": [KEY_SPACE], "pause_game": [KEY_ESCAPE, KEY_P]}
@@ -165,9 +205,21 @@ func _sound(key: String) -> void:
 	voice.play()
 
 func _on_focus_lost() -> void:
+	if is_instance_valid(mobile_ui):
+		mobile_ui.reset_input()
 	if state == "playing":
 		state = "paused"
+	if state in ["paused", "upgrade", "intermission"]:
 		save_run()
+	for voice in audio_pool:
+		voice.stop()
+
+func _notification(what: int) -> void:
+	if what in [NOTIFICATION_APPLICATION_PAUSED, NOTIFICATION_APPLICATION_FOCUS_OUT]:
+		_on_focus_lost()
+	elif what == NOTIFICATION_APPLICATION_RESUMED and is_instance_valid(mobile_ui):
+		# A resumed run stays paused until the player explicitly resumes it.
+		mobile_ui.invalidate()
 
 func start_game(persist: bool = true) -> void:
 	campaign = {}
@@ -265,14 +317,22 @@ func _launch() -> void:
 		continue_run()
 
 func _unhandled_input(event: InputEvent) -> void:
+	if is_instance_valid(mobile_ui) and (mobile_ui.settings_open or mobile_ui.legal_open or mobile_ui.fleet_open or mobile_ui.portrait):
+		if event is InputEventKey and event.pressed and event.physical_keycode == KEY_ESCAPE:
+			if mobile_ui.legal_open:
+				mobile_ui.legal_open = false
+			elif mobile_ui.fleet_open:
+				mobile_ui.fleet_open = false
+			else:
+				mobile_ui.settings_open = false
+			mobile_ui.invalidate()
+		return
 	if event is InputEventKey and event.pressed and not event.echo:
 		var key: int = event.physical_keycode
 		if key == KEY_V:
-			reduced_motion = not reduced_motion
-			if reduced_motion and particles.size() > 120:
-				particles.resize(120)
+			toggle_motion()
 		if key == KEY_M:
-			muted = not muted
+			toggle_sound()
 		if key == KEY_L:
 			I18n.toggle()
 		if key == KEY_F12:
@@ -339,7 +399,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				_go_home()
 		if event.is_action_pressed("dash") and state == "playing":
 			try_dash()
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+	if mobile_ui == null and event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		var cursor := get_global_mouse_position()
 		if state == "sector_map":
 			for i in range(3):
@@ -456,6 +516,8 @@ func _tick(delta: float) -> void:
 	screen_flash = maxf(0, screen_flash - delta * 2.8)
 	shake = maxf(0, shake - delta * 30)
 	var direction := Input.get_vector("left", "right", "up", "down")
+	if is_instance_valid(mobile_ui):
+		direction = (direction + mobile_ui.movement).limit_length()
 	if direction.length_squared() > 0:
 		facing = direction.normalized()
 	previous_player = player
@@ -837,6 +899,10 @@ func _draw() -> void:
 	for star in stars:
 		var alpha := 0.12 + 0.12 * sin(ambient_time * (0.4 + star.z) + star.x)
 		draw_circle(Vector2(star.x,star.y), 0.7 + star.z, Color(0.45,0.65,0.9,alpha))
+	if is_instance_valid(mobile_ui):
+		if state in ["playing", "paused", "upgrade", "intermission", "won", "lost"]:
+			_draw_game()
+		return
 	if state == "menu":
 		_draw_menu()
 	elif state == "hangar":
@@ -1188,10 +1254,11 @@ func _draw_game() -> void:
 			draw_line(Vector2(45,y),Vector2(1235,y),Color(boss_cinematic_color,strength*0.55),3,true)
 	if screen_flash > 0:
 		draw_rect(ARENA,Color(CORAL,screen_flash * 0.12))
-	_draw_hud()
-	if CampaignRuntime.active(self): CampaignUI.draw_campaign_hud(self)
-	_draw_footer()
-	if toast_timer > 0 and state == "playing":
+	if mobile_ui == null:
+		_draw_hud()
+		if CampaignRuntime.active(self): CampaignUI.draw_campaign_hud(self)
+		_draw_footer()
+	if mobile_ui == null and toast_timer > 0 and state == "playing":
 		_panel(Rect2(385,126,510,38),Color(0.04,0.09,0.14,0.9),Color("233c4d"),6)
 		_center(toast,151,13,MINT)
 
