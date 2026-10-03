@@ -47,6 +47,8 @@ jobs:
           touch docs/.nojekyll
           printf '%s\n' "$GITHUB_SHA" > docs/deploy-commit.txt
           cp LICENSE assets/FONT-LICENSE.txt assets/NOTO-SANS-KR-LICENSE.txt GODOT-LICENSE.txt GODOT-COPYRIGHT.txt docs/
+          mkdir -p docs/store
+          cp app-store/privacy.html app-store/support.html docs/store/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
