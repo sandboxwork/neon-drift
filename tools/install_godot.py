@@ -8,6 +8,7 @@ Uses only Python's standard library. Does not change system installations.
 from __future__ import annotations
 import argparse
 import hashlib
+import os
 from pathlib import Path
 import platform
 import shutil
@@ -83,6 +84,21 @@ def main() -> None:
             names += ["web_nothreads_debug.zip", "web_nothreads_release.zip"]
         for name in names:
             (templates / name).write_bytes(archive.read("templates/" + name))
+    # Godot's Apple exporter also checks the standard template directory even
+    # when a custom template path is supplied. Keep it linked to verified files.
+    data_root = (Path.home() / "Library/Application Support/Godot" if system == "Darwin"
+                 else Path(os.environ.get("XDG_DATA_HOME", str(Path.home() / ".local/share"))) / "godot")
+    installed = data_root / "export_templates" / VERSION.replace("-stable", ".stable")
+    installed.mkdir(parents=True, exist_ok=True)
+    for name in names:
+        target = installed / name
+        if target.exists():
+            if digest(target) != digest(templates / name):
+                raise RuntimeError(f"Preserving a different existing template: {target}")
+        elif target.is_symlink():
+            raise RuntimeError(f"Preserving an existing broken template link: {target}")
+        else:
+            target.symlink_to(templates / name)
     print(f"Godot: {directory / 'godot'}\nTemplates: {templates}")
 
 
