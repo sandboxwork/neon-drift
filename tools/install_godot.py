@@ -11,6 +11,7 @@ import hashlib
 from pathlib import Path
 import platform
 import shutil
+import subprocess
 import urllib.request
 import zipfile
 
@@ -61,9 +62,19 @@ def main() -> None:
     directory = args.directory.resolve()
     directory.mkdir(parents=True, exist_ok=True)
     name, checksum, member = ARTIFACTS[system]
-    with zipfile.ZipFile(download(directory, name, checksum)) as archive:
-        (directory / "godot").write_bytes(archive.read(member))
-    (directory / "godot").chmod(0o755)
+    editor_archive = download(directory, name, checksum)
+    executable = directory / "godot"
+    if system == "Darwin":
+        # Preserve the signed macOS application bundle and its resources.
+        # Extracting only Contents/MacOS/Godot can fail macOS code validation.
+        subprocess.run(["ditto", "-xk", str(editor_archive), str(directory)], check=True)
+        if executable.exists() or executable.is_symlink():
+            executable.unlink()
+        executable.symlink_to(member)
+    else:
+        with zipfile.ZipFile(editor_archive) as archive:
+            executable.write_bytes(archive.read(member))
+        executable.chmod(0o755)
     templates = directory / "templates"
     templates.mkdir(exist_ok=True)
     with zipfile.ZipFile(download(directory, f"Godot_v{VERSION}_export_templates.tpz", TEMPLATES_HASH)) as archive:
