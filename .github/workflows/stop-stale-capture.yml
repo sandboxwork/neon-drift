@@ -1,0 +1,21 @@
+name: Stop stale metadata capture
+on:
+  push:
+    branches: [ios-metadata-stop-stale]
+permissions:
+  actions: write
+jobs:
+  stop:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Stop this task's stalled simulator run
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          run_path="repos/sandboxwork/neon-drift/actions/runs/37115145393"
+          head_sha=$(gh api "$run_path" --jq .head_sha)
+          test "$head_sha" = ef6d729d32444ab8f793c6bfab17c707183befcc
+          run_state=$(gh api "$run_path" --jq .status)
+          if [ "$run_state" != completed ]; then
+            gh api --method POST "$run_path/cancel"
+          fi
