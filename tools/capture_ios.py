@@ -42,7 +42,7 @@ def main():
     run([godot,'--headless','--editor','--path',stage,'--import','--quit'])
     run([godot,'--headless','--path',stage,'--export-release','iOS',output/'neondrift.ipa'])
     derived=BUILD/'SimulatorDerivedData'
-    run(['xcodebuild','-project',output/'neondrift.xcodeproj','-scheme','neondrift','-configuration','Release','-sdk','iphonesimulator','-destination','generic/platform=iOS Simulator','-derivedDataPath',derived,'CODE_SIGNING_ALLOWED=NO','build'])
+    run(['xcodebuild','-project',output/'neondrift.xcodeproj','-scheme','neondrift','-configuration','Release','-sdk','iphonesimulator','-destination','generic/platform=iOS Simulator','-derivedDataPath',derived,'ARCHS=x86_64','ONLY_ACTIVE_ARCH=YES','CODE_SIGNING_ALLOWED=NO','build'])
     app=derived/'Build/Products/Release-iphonesimulator/neondrift.app'
     devices=json.loads(read(['xcrun','simctl','list','devices','available','--json']))['devices']
     pool=[d for runtime, ds in devices.items() if 'iOS' in runtime for d in ds]
