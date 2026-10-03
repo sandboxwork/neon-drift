@@ -8,6 +8,8 @@ func _ready() -> void:
 	call_deferred("capture")
 
 func capture() -> void:
+	# Static capture scenes do not need to consume the host at 60 FPS.
+	Engine.max_fps = 15
 	DirAccess.make_dir_recursive_absolute(output)
 	game = load("res://main.tscn").instantiate()
 	add_child(game)
@@ -53,7 +55,7 @@ func screenshot(locale: String, page: String) -> void:
 	var marker := FileAccess.open(output + "/ready.json", FileAccess.WRITE)
 	marker.store_string(JSON.stringify({"name": locale + "-" + page, "state": game.state, "locale": I18n.locale, "platform": OS.get_name(), "capture_method": "native iOS viewport framebuffer", "width": framebuffer.get_width(), "height": framebuffer.get_height()}))
 	marker.close()
-	var timeout := Time.get_ticks_msec() + 60000
+	var timeout := Time.get_ticks_msec() + 180000
 	while not FileAccess.file_exists(output + "/ack"):
 		if Time.get_ticks_msec() > timeout:
 			push_error("Screenshot host timeout")

@@ -74,7 +74,8 @@ def main():
         log=console.open('w')
         launch=subprocess.Popen(['xcrun','simctl','launch','--console',udid,BUNDLE],stdout=log,stderr=subprocess.STDOUT)
         container=Path(read(['xcrun','simctl','get_app_container',udid,BUNDLE,'data']))
-        deadline=time.monotonic()+240
+        # Cold hosted simulators can spend several minutes initializing OpenGL.
+        deadline=time.monotonic()+900
         captures=[]
         while time.monotonic()<deadline:
             completed=list(container.rglob('store-capture/complete.json'))
@@ -95,6 +96,10 @@ def main():
                 shutil.copy2(marker.parent/(name+'.png'),destination/(name+'.png'))
                 print('Captured native framebuffer:', name, state['width'], state['height'],flush=True)
                 captures.append(state)
+                (destination/'capture-progress.json').write_text(json.dumps({
+                    'platform': 'iOS', 'device': device['name'],
+                    'runtime': runtime, 'complete': False, 'captures': captures,
+                }, indent=2)+'\n')
                 marker.unlink()
                 (marker.parent/'ack').write_text('captured\n')
             time.sleep(0.3)
