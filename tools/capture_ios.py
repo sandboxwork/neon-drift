@@ -4,6 +4,7 @@
 Does not sign, upload, or modify the production project. Requires macOS/Xcode.
 """
 import json
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -16,6 +17,7 @@ BUNDLE = 'com.jkchat.neondrift.capture'
 
 def run(args, **kwargs):
     print('+', ' '.join(map(str,args)), flush=True)
+    kwargs.setdefault('timeout', 600)
     return subprocess.run(list(map(str,args)), check=True, **kwargs)
 
 def read(args):
@@ -45,7 +47,11 @@ def main():
     run(['xcodebuild','-project',output/'neondrift.xcodeproj','-scheme','neondrift','-configuration','Release','-sdk','iphonesimulator','-destination','generic/platform=iOS Simulator','-derivedDataPath',derived,'ARCHS=x86_64','ONLY_ACTIVE_ARCH=YES','CODE_SIGNING_ALLOWED=NO','build'])
     app=derived/'Build/Products/Release-iphonesimulator/neondrift.app'
     devices=json.loads(read(['xcrun','simctl','list','devices','available','--json']))['devices']
-    pool=[d for runtime, ds in devices.items() if 'iOS' in runtime for d in ds]
+    runtimes=[r for r in devices if 'iOS' in r]
+    preferred=[r for r in runtimes if 'iOS-18-' in r]
+    runtime=sorted(preferred or runtimes)[-1]
+    pool=devices[runtime]
+    print('Capture runtime:', runtime, flush=True)
     selected=[]
     for label, match in [('iphone',lambda n: 'iPhone' in n and 'Pro Max' in n),('ipad',lambda n: 'iPad Pro' in n and '13-inch' in n)]:
         choices=[d for d in pool if match(d['name'])]
@@ -53,15 +59,19 @@ def main():
         selected.append((label,choices[-1]))
     for label, device in selected:
         udid=device['udid']
-        run(['xcrun','simctl','shutdown','all'])
-        run(['xcrun','simctl','boot',udid])
-        run(['xcrun','simctl','bootstatus',udid,'-b'])
-        run(['xcrun','simctl','status_bar',udid,'override','--time','9:41','--dataNetwork','wifi','--wifiMode','active','--wifiBars','3','--batteryState','charged','--batteryLevel','100'])
-        run(['xcrun','simctl','install',udid,app])
-        run(['xcrun','simctl','launch',udid,BUNDLE])
-        container=Path(read(['xcrun','simctl','get_app_container',udid,BUNDLE,'data']))
         destination=BUILD/'app-store-screenshots'/label
         destination.mkdir(parents=True,exist_ok=True)
+        run(['xcrun','simctl','shutdown','all'])
+        run(['xcrun','simctl','boot',udid])
+        simulator=Path(os.environ['DEVELOPER_DIR'])/'Applications/Simulator.app'
+        run(['open','-a',simulator,'--args','-CurrentDeviceUDID',udid])
+        run(['xcrun','simctl','bootstatus',udid,'-b'],timeout=180)
+        run(['xcrun','simctl','status_bar',udid,'override','--time','9:41','--dataNetwork','wifi','--wifiMode','active','--wifiBars','3','--batteryState','charged','--batteryLevel','100'])
+        run(['xcrun','simctl','install',udid,app])
+        console=destination/'simulator-console.log'
+        log=console.open('w')
+        launch=subprocess.Popen(['xcrun','simctl','launch','--console',udid,BUNDLE],stdout=log,stderr=subprocess.STDOUT)
+        container=Path(read(['xcrun','simctl','get_app_container',udid,BUNDLE,'data']))
         deadline=time.monotonic()+240
         captures=[]
         while time.monotonic()<deadline:
@@ -71,6 +81,9 @@ def main():
                 evidence.update({'device':device['name'],'captures':captures})
                 (destination/'capture-evidence.json').write_text(json.dumps(evidence,indent=2)+'\n')
                 break
+            if launch.poll() is not None:
+                print(console.read_text(),flush=True)
+                raise RuntimeError('App stopped before capture finished')
             markers=list(container.rglob('store-capture/ready.json'))
             for marker in markers:
                 state=json.loads(marker.read_text())
@@ -82,8 +95,11 @@ def main():
                 marker.unlink()
                 (marker.parent/'ack').write_text('captured\n')
             time.sleep(0.3)
-        else: raise RuntimeError('Simulator capture timed out: '+device['name'])
+        else:
+            print(console.read_text(),flush=True)
+            raise RuntimeError('Simulator capture timed out: '+device['name'])
         if len(captures)!=6: raise RuntimeError('Incomplete screenshots')
         run(['xcrun','simctl','shutdown',udid])
+        log.close()
 
 if __name__=='__main__': main()
