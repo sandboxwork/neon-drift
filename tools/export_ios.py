@@ -56,6 +56,8 @@ def validate_project(output: Path, bundle_id: str) -> dict:
     project = output / "neondrift.xcodeproj" / "project.pbxproj"
     if not project.is_file() or not (output / "neondrift.pck").is_file():
         raise RuntimeError("Godot did not produce an Xcode project and game pack.")
+    if platform.system() == "Darwin":
+        run(["plutil", "-lint", str(project)])
     info_path = output / "neondrift" / "neondrift-Info.plist"
     with info_path.open("rb") as stream:
         info = plistlib.load(stream)
@@ -144,8 +146,11 @@ def main() -> None:
             if path.suffix in {".pbxproj", ".plist", ".xcconfig"}:
                 text = path.read_text()
                 if path.suffix == ".pbxproj":
-                    text = text.replace("DEVELOPMENT_TEAM = " + UNSIGNED_TEAM + ";", 'DEVELOPMENT_TEAM = "";')
-                path.write_text(text.replace(UNSIGNED_TEAM, ""))
+                    text = re.sub(r'((?:DEVELOPMENT_TEAM|DevelopmentTeam)\s*=\s*)"?'
+                                  + UNSIGNED_TEAM + r'"?;', r'\1"";', text)
+                elif path.suffix == ".plist":
+                    text = text.replace("<string>" + UNSIGNED_TEAM + "</string>", "<string></string>")
+                path.write_text(text)
     receipt = validate_project(output, bundle_id)
     receipt.update({"engine": version, "bundle_id": bundle_id, "version": args.version,
                     "build_number": args.build_number, "signed": False,
